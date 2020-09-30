@@ -1,14 +1,21 @@
 const modals = () => {
 
-    function bindModal(trigger, modal, close) {
-        trigger.addEventListener('click', (e) => {
-            if (e.target) {
-                e.preventDefault();
-            }
+    function bindModal(triggerSelector, modalSelector, closeSelector) {
+        const trigger = document.querySelectorAll(triggerSelector),
+            modal = document.querySelector(modalSelector),
+            close = document.querySelector(closeSelector);
 
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';        // страница под модальн.окном не будет скролится
-            // document.body.classList.add('modal-open');          // класс из bootstrap, вместо вышеуказанного кода          
+        // trigger.addEventListener('click', (e) => {           // заком., работает только с querySelector
+        trigger.forEach(item => {
+            item.addEventListener('click', (e) => {
+
+                if (e.target) {
+                    e.preventDefault();
+                }
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';        // страница под модальн.окном не будет скролится
+                // document.body.classList.add('modal-open');          // класс из bootstrap, вместо вышеуказанного кода          
+            });
         });
 
         close.addEventListener('click', () => {
@@ -26,12 +33,21 @@ const modals = () => {
         });
 
     }
+    // const callEngineerBtn = document.querySelector('.popup_engineer_btn'),           // заком., в начале добавили селекторы
+    //     modalEngineer = document.querySelector('.popup_engineer'),
+    //     modalENgineerClose = document.querySelector('.popup_engineer .popup_close');
 
-    const callEngineerBtn = document.querySelector('.popup_engineer_btn'),
-        modalEngineer = document.querySelector('.popup_engineer'),
-        modalENgineerClose = document.querySelector('.popup_engineer .popup_close');
+    function showModalByTime(selector, time) {          // что-бы мод.окно появлялось со временем
+        setTimeout(function () {
+            document.querySelector(selector).style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }, time);
+    }
 
-    bindModal(callEngineerBtn, modalEngineer, modalENgineerClose);
+    bindModal('.popup_engineer_btn', '.popup_engineer', '.popup_engineer .popup_close');
+    bindModal('.phone_link', '.popup', '.popup .popup_close');
+
+    showModalByTime('.popup', 5000);
 
 };
 
