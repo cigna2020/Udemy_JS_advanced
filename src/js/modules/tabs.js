@@ -1,4 +1,4 @@
-const tabs = (headerSelector, tabSelector, contentSelector, activeClass) => {
+const tabs = (headerSelector, tabSelector, contentSelector, activeClass, display = 'block') => {
     const header = document.querySelector(headerSelector),          // блок, который объединяет все табы
         tab = document.querySelectorAll(tabSelector),
         content = document.querySelectorAll(contentSelector);
@@ -14,7 +14,7 @@ const tabs = (headerSelector, tabSelector, contentSelector, activeClass) => {
 
 
     function showTabContent(i = 0) {                 // 0 - чтобы отобразить первый таб при загрузке страницы
-        content[i].style.display = 'block';         // нужно проверить, чтобы в верстке был "блок", "і" - индекс таба
+        content[i].style.display = display;         // нужно проверить, чтобы в верстке был "блок", "і" - индекс таба
         tab[i].classList.add(activeClass);
     }
     hideTabContent();
