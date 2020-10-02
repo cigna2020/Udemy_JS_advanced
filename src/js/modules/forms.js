@@ -1,14 +1,19 @@
-const forms = () => {
+import checkNumInputs from './checkNumInputs';
+
+const forms = (state) => {                  // state - modalState (данные с формы), актуально только для калькулятора
 
     const form = document.querySelectorAll('form'),
-        inputs = document.querySelectorAll('input'),
-        phoneInputs = document.querySelectorAll('input[name = "user_phone"]');      // это input формы
+        inputs = document.querySelectorAll('input');
+    // phoneInputs = document.querySelectorAll('input[name = "user_phone"]');      // это input формы // закомент., создали отдельный модуль checkNumInputs
 
-    phoneInputs.forEach(item => {
-        item.addEventListener('input', () => {
-            item.value = item.value.replace(/\D/, '');      // заменяет (удаляет) все НЕ цифры, их просто нельзя ввести
-        });
-    });
+
+    checkNumInputs('input[name = "user_phone"]');
+
+    // phoneInputs.forEach(item => {                    // закомент., создали отдельный модуль checkNumInputs
+    //     item.addEventListener('input', () => {
+    //         item.value = item.value.replace(/\D/, '');      // заменяет (удаляет) все НЕ цифры, их просто нельзя ввести
+    //     });
+    // });
 
     const message = {
         loading: 'Загрузка...',
@@ -40,7 +45,12 @@ const forms = () => {
             statusMessage.classList.add('status');
             item.appendChild(statusMessage);                // добавляем сообщение в конец формы
 
-            const formData = new FormData(item);    // FormData найдете все импуты формы (item), соберет данные (текст, файлы..., зависит от формы)
+            const formData = new FormData(item);    // FormData найдете все импуты формы (item), соберет данные (текст, файлы..., зависит от формы, в нашем слачае Ф.И.О, телефон)
+            // if (item.getAttribute('data-calc') === 'end') { // заком., иначе не работает append   // data-calc = 'end' есть только у формы-калькулятора
+            for (let key in state) {                        // state - modalState (данные калькулятора), key - ключ масива
+                formData.append(key, state[key]);
+            }
+            // }
 
             postData('assets/server.php', formData)
                 .then(res => {
