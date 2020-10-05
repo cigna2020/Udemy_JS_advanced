@@ -17797,6 +17797,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_modals__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/modals */ "./src/js/modules/modals.js");
 /* harmony import */ var _modules_tabs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/tabs */ "./src/js/modules/tabs.js");
 /* harmony import */ var _modules_forms__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/forms */ "./src/js/modules/forms.js");
+/* harmony import */ var _modules_changeModalState__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/changeModalState */ "./src/js/modules/changeModalState.js");
+/* harmony import */ var _modules_timer__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/timer */ "./src/js/modules/timer.js");
+
+
 
 
 
@@ -17804,6 +17808,11 @@ __webpack_require__.r(__webpack_exports__);
 window.addEventListener('DOMContentLoaded', function () {
   'use strict';
 
+  var modalState = {}; // обьект куда будут записыватся данные с формы-калькулятора
+
+  var deadline = '2020-12-31'; // данные для функции timer
+
+  Object(_modules_changeModalState__WEBPACK_IMPORTED_MODULE_4__["default"])(modalState);
   Object(_modules_modals__WEBPACK_IMPORTED_MODULE_1__["default"])();
   Object(_modules_tabs__WEBPACK_IMPORTED_MODULE_2__["default"])('.glazing_slider', '.glazing_block', '.glazing_content', 'active'); // active без точки, так как в функции используется classList
 
@@ -17811,8 +17820,129 @@ window.addEventListener('DOMContentLoaded', function () {
 
   Object(_modules_tabs__WEBPACK_IMPORTED_MODULE_2__["default"])('.balcon_icons', '.balcon_icons_img', '.big_img > img', 'do_image_more', 'inline-block'); // > img, т.е. только прямые наследники класса
 
-  Object(_modules_forms__WEBPACK_IMPORTED_MODULE_3__["default"])();
+  Object(_modules_forms__WEBPACK_IMPORTED_MODULE_3__["default"])(modalState); // modalState в форме - для того, чтобы работать с данными 
+
+  Object(_modules_timer__WEBPACK_IMPORTED_MODULE_5__["default"])('.container1', deadline);
 });
+
+/***/ }),
+
+/***/ "./src/js/modules/changeModalState.js":
+/*!********************************************!*\
+  !*** ./src/js/modules/changeModalState.js ***!
+  \********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _checkNumInputs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./checkNumInputs */ "./src/js/modules/checkNumInputs.js");
+
+ // будет управлять данными с формы калькулятора
+
+var changeModalState = function changeModalState(state) {
+  var windowForm = document.querySelectorAll('.balcon_icons_img'),
+      // поучаем форму выбраного балкона из первого окна-калькулятора
+  windowWidth = document.querySelectorAll('#width'),
+      // поучаем ширину из первого окна-калькулятора (данные input), везде All, так как используем forEach 
+  windowHeigt = document.querySelectorAll('#height'),
+      // поучаем высоту из первого окна-калькулятора (данные input)
+  windowType = document.querySelectorAll('#view_type'),
+      // поучаем тип из второго окна-калькулятора (select)
+  windowProfile = document.querySelectorAll('.checkbox'); // поучаем профиль (холод/тепло) из второго окна-калькулятора (checkbox)
+
+  Object(_checkNumInputs__WEBPACK_IMPORTED_MODULE_1__["default"])('#width');
+  Object(_checkNumInputs__WEBPACK_IMPORTED_MODULE_1__["default"])('#height');
+
+  function bindActionToElems(event, elem, prop) {
+    // prop - то как будет называтся поле в modalState из main.js 
+    elem.forEach(function (item, i) {
+      // elem - переменная (windowForm или windowWidth и т.д)  
+      item.addEventListener(event, function () {
+        // item - изображение балкона
+        switch (item.nodeName) {
+          case 'SPAN':
+            state[prop] = i;
+            break;
+
+          case 'INPUT':
+            if (item.getAttribute('type') === 'checkbox') {
+              i === 0 ? state[prop] = 'Холодное' : state[prop] = 'Теплое';
+              elem.forEach(function (box, j) {
+                // elem = windowProfile
+                box.checked = false; // убрать все галочки
+
+                if (i == j) {
+                  // если индексы совпадают (отчечено то, на что кликнули)
+                  box.checked = true;
+                }
+              });
+            } else {
+              state[prop] = item.value;
+            }
+
+            break;
+
+          case 'SELECT':
+            state[prop] = item.value;
+            break;
+        }
+
+        console.log(state); // if (elem.length > 1) {      // заком., не подходит для windowType (select) & windowProfile (checkbox), используем nodeName  // больше чем 1 только windowForm
+        //     state[prop] = i;       // state - это modalState из main.js (указать при импорте в main.js), который будет создано новое поле form из индексом балкона
+        // } else {
+        //     state[prop] = item.value;       // для данных высоты и ширины
+        // }
+        // console.log(state);
+      });
+    });
+  } // windowForm.forEach((item, i) => {                   // заком., создали отдельную функции (см.выше) для всех переменных
+  //     item.addEventListener('click', () => {          // item - изображение балкона
+  //         state.form = i;                             // state - это modalState из main.js (указать при импорте в main.js), который будет создано новое поле form из индексом балкона
+  //         console.log(state);
+  //     });
+  // });
+
+
+  bindActionToElems('click', windowForm, 'form');
+  bindActionToElems('input', windowWidth, 'width');
+  bindActionToElems('input', windowHeigt, 'height');
+  bindActionToElems('change', windowType, 'type');
+  bindActionToElems('change', windowProfile, 'profile');
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (changeModalState);
+
+/***/ }),
+
+/***/ "./src/js/modules/checkNumInputs.js":
+/*!******************************************!*\
+  !*** ./src/js/modules/checkNumInputs.js ***!
+  \******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.string.replace */ "./node_modules/core-js/modules/es.string.replace.js");
+/* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+var checkNumInputs = function checkNumInputs(selector) {
+  var numInputs = document.querySelectorAll(selector);
+  numInputs.forEach(function (item) {
+    item.addEventListener('input', function () {
+      item.value = item.value.replace(/\D/, ''); // заменяет (удаляет) все НЕ цифры, их просто нельзя ввести
+    });
+  });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (checkNumInputs);
 
 /***/ }),
 
@@ -17831,12 +17961,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var core_js_modules_es_promise__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_promise__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var core_js_modules_es_promise_finally__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! core-js/modules/es.promise.finally */ "./node_modules/core-js/modules/es.promise.finally.js");
 /* harmony import */ var core_js_modules_es_promise_finally__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_promise_finally__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! core-js/modules/es.string.replace */ "./node_modules/core-js/modules/es.string.replace.js");
-/* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
-/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! regenerator-runtime/runtime */ "./node_modules/regenerator-runtime/runtime.js");
-/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! regenerator-runtime/runtime */ "./node_modules/regenerator-runtime/runtime.js");
+/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _checkNumInputs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./checkNumInputs */ "./src/js/modules/checkNumInputs.js");
 
 
 
@@ -17844,16 +17973,17 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var forms = function forms() {
+var forms = function forms(state) {
+  // state - modalState (данные с формы), актуально только для калькулятора
   var form = document.querySelectorAll('form'),
-      inputs = document.querySelectorAll('input'),
-      phoneInputs = document.querySelectorAll('input[name = "user_phone"]'); // это input формы
+      inputs = document.querySelectorAll('input'); // phoneInputs = document.querySelectorAll('input[name = "user_phone"]');      // это input формы // закомент., создали отдельный модуль checkNumInputs
 
-  phoneInputs.forEach(function (item) {
-    item.addEventListener('input', function () {
-      item.value = item.value.replace(/\D/, ''); // заменяет (удаляет) все НЕ цифры, их просто нельзя ввести
-    });
-  });
+  Object(_checkNumInputs__WEBPACK_IMPORTED_MODULE_5__["default"])('input[name = "user_phone"]'); // phoneInputs.forEach(item => {                    // закомент., создали отдельный модуль checkNumInputs
+  //     item.addEventListener('input', () => {
+  //         item.value = item.value.replace(/\D/, '');      // заменяет (удаляет) все НЕ цифры, их просто нельзя ввести
+  //     });
+  // });
+
   var message = {
     loading: 'Загрузка...',
     success: 'Спасибо! Скоро мы с вами свяжемся.',
@@ -17897,6 +18027,14 @@ var forms = function forms() {
     });
   };
 
+  var closeModalPopup = function closeModalPopup() {
+    var modalPopup = document.querySelectorAll('.popup_calc_end');
+    modalPopup.forEach(function (item) {
+      item.style.display = 'none';
+      document.body.style.overflow = '';
+    });
+  };
+
   form.forEach(function (item) {
     item.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -17904,7 +18042,14 @@ var forms = function forms() {
       statusMessage.classList.add('status');
       item.appendChild(statusMessage); // добавляем сообщение в конец формы
 
-      var formData = new FormData(item); // FormData найдете все импуты формы (item), соберет данные (текст, файлы..., зависит от формы)
+      var formData = new FormData(item); // FormData найдете все импуты формы (item), соберет данные (текст, файлы..., зависит от формы, в нашем слачае Ф.И.О, телефон)
+      // if (item.getAttribute('data-calc') === 'end') { // заком., иначе не работает append   // data-calc = 'end' есть только у формы-калькулятора
+
+      for (var key in state) {
+        // state - modalState (данные калькулятора), key - ключ масива
+        formData.append(key, state[key]);
+      } // }
+
 
       postData('assets/server.php', formData).then(function (res) {
         console.log(res);
@@ -17915,7 +18060,8 @@ var forms = function forms() {
         clearInputs();
         setTimeout(function () {
           statusMessage.remove();
-        }, 5000);
+          closeModalPopup();
+        }, 2000);
       });
     });
   });
@@ -18068,6 +18214,81 @@ var tabs = function tabs(headerSelector, tabSelector, contentSelector, activeCla
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (tabs);
+
+/***/ }),
+
+/***/ "./src/js/modules/timer.js":
+/*!*********************************!*\
+  !*** ./src/js/modules/timer.js ***!
+  \*********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+var timer = function timer(id, deadline) {
+  // id - selector (class) в котором расположен таймер на странице
+  var addZero = function addZero(num) {
+    if (num <= 9) {
+      return '0' + num;
+    } else {
+      return num;
+    }
+  };
+
+  var getTimeRemaining = function getTimeRemaining(endtime) {
+    var t = Date.parse(endtime) - Date.parse(new Date()),
+        // метод parse переводит все в миллисекунды; new Date() - возвращает текущее времья
+    seconds = Math.floor(t / 1000 % 60),
+        // времья в секундах, % - остаток (секунды) от деление на минуты; Math.floor - округление
+    minutes = Math.floor(t / 1000 / 60 % 60),
+        // в скобках получаем часы, остаток от деление - минуты
+    hours = Math.floor(t / (1000 * 60 * 60) % 24),
+        //в скобках получаем общее количество часов,  остаток от деление - часы
+    days = Math.floor(t / (1000 * 60 * 60 * 24)); // общее количество дней
+
+    return {
+      'total': t,
+      // t - все времья в миллисекундах
+      'days': days,
+      'hours': hours,
+      'minutes': minutes,
+      'seconds': seconds
+    };
+  };
+
+  var setClock = function setClock(selector, endtime) {
+    var timer = document.querySelector(selector),
+        days = timer.querySelector('#days'),
+        hours = timer.querySelector('#hours'),
+        minutes = timer.querySelector('#minutes'),
+        seconds = timer.querySelector('#seconds'),
+        timeInterval = setInterval(updateClock, 1000);
+    updateClock(); // вызываем вручную (не через setInterval), чтобы на странице не появлялось дефолтные значения таймера
+
+    function updateClock() {
+      var t = getTimeRemaining(endtime);
+      days.textContent = addZero(t.days); // в переменную days с id days записываем значение days c функции getTimeRemaining
+
+      hours.textContent = addZero(t.hours);
+      minutes.textContent = addZero(t.minutes);
+      seconds.textContent = addZero(t.seconds);
+
+      if (t.total <= 0) {
+        // выставляем все значение в ноль и останавливаем таймер
+        days.textContent = '00';
+        hours.textContent = '00';
+        minutes.textContent = '00';
+        seconds.textContent = '00';
+        clearInterval(timeInterval);
+      }
+    }
+  };
+
+  setClock(id, deadline);
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (timer);
 
 /***/ }),
 

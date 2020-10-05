@@ -34,7 +34,16 @@ const forms = (state) => {                  // state - modalState (данные 
     const clearInputs = () => {         // очистить инпуты
         inputs.forEach(item => {
             item.value = '';
-        })
+        });
+    };
+
+    const closeModalPopup = () => {
+        const modalPopup = document.querySelectorAll('.popup_calc_end');
+        modalPopup.forEach(item => {
+            item.style.display = 'none';
+            document.body.style.overflow = '';
+        });
+
     };
 
     form.forEach(item => {
@@ -50,6 +59,7 @@ const forms = (state) => {                  // state - modalState (данные 
             for (let key in state) {                        // state - modalState (данные калькулятора), key - ключ масива
                 formData.append(key, state[key]);
             }
+
             // }
 
             postData('assets/server.php', formData)
@@ -62,7 +72,8 @@ const forms = (state) => {                  // state - modalState (данные 
                     clearInputs();
                     setTimeout(() => {
                         statusMessage.remove();
-                    }, 5000);
+                        closeModalPopup();
+                    }, 2000);
                 });
         });
     });
